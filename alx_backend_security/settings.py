@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ip_tracking',
+    'ratelimit',
 ]
 
 MIDDLEWARE = [
@@ -122,5 +124,30 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-ip-tracking-cache",
+    }
+}
+
+# RabbitMQ broker
+CELERY_BROKER_URL = "amqp://guest:guest@localhost//"
+
+# Result backend - use RPC (good enough if you don’t need Redis)
+CELERY_RESULT_BACKEND = "rpc://"
+
+
+# Rate limits
+RATELIMIT_ANON = "5/m"   # 5 requests per minute
+RATELIMIT_AUTH = "10/m"  # 10 requests per minute
+
+CELERY_BEAT_SCHEDULE = {
+    "detect-anomalies-hourly": {
+        "task": "ip_tracking.tasks.detect_anomalies",
+        "schedule": crontab(minute=0, hour="*"),  # every hour
+    },
+}
 
 

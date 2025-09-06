@@ -1,6 +1,6 @@
 from django.http import JsonResponse
 from django.conf import settings
-from ratelimit.decorators import ratelimit
+from django_ratelimit.decorators import ratelimit
 
 
 # Anonymous users → 5/min

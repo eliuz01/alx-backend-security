@@ -1,9 +1,11 @@
 from django.http import JsonResponse
 from django.conf import settings
 from django_ratelimit.decorators import ratelimit
+from django.views.decorators.csrf import csrf_exempt
 
 
 # Anonymous users → 5/min
+@csrf_exempt
 @ratelimit(key="ip", rate=settings.RATELIMIT_ANON, method="POST", block=True)
 # Authenticated users → 10/min
 @ratelimit(key="ip", rate=settings.RATELIMIT_AUTH, method="POST", block=True)
